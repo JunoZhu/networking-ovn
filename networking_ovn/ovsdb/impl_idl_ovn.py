@@ -229,6 +229,9 @@ class OvsdbNbOvnIdl(ovn_api.API):
         return cmd.SetLRouterPortInLSwitchPortCommand(self, lswitch_port,
                                                       lrouter_port)
 
+    def add_sfc_flow_classifier(self, lswitch, lfc, **columns):
+        return cmd.AddFlowClassifierCommand(self, lswitch, lfc, **columns)
+
     def add_acl(self, lswitch, lport, **columns):
         return cmd.AddACLCommand(self, lswitch, lport, **columns)
 

@@ -311,6 +311,31 @@ class SetLRouterPortInLSwitchPortCommand(BaseCommand):
         setattr(port, 'type', 'router')
 
 
+class AddFlowClassifierCommand(BaseCommand):
+    def __init__(self, api, lswitch, lfc, **columns):
+        super(AddFlowClassifierCommand, self).__init__(api)
+        self.lswitch = lswitch
+        self.lfc = lfc
+        self.columns = columns
+
+    def run_idl(self, txn):
+        try:
+            lswitch = idlutils.row_by_value(self.api.idl, 'Logical_Switch',
+                                            'name', self.lswitch)
+        except idlutils.RowNotFound:
+            msg = _("Logical Switch %s does not exist") % self.lswitch
+            raise RuntimeError(msg)
+
+        row = txn.insert(self.api._tables['ACL'])
+        for col, val in self.columns.items():
+            setattr(row, col, val)
+        row.external_ids = {'neutron:flow_classifier': self.lfc}
+        lswitch.verify('acls')
+        acls = getattr(lswitch, 'acls', [])
+        acls.append(row.uuid)
+        setattr(lswitch, 'acls', acls)
+
+
 class AddACLCommand(BaseCommand):
     def __init__(self, api, lswitch, lport, **columns):
         super(AddACLCommand, self).__init__(api)
